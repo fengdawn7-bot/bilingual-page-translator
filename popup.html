@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bilingual Translator</title>
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header>
+        <h1>网页翻译</h1>
+        <button id="open-options" class="icon-button" title="设置" aria-label="设置">⚙</button>
+      </header>
+      <section class="actions">
+        <button id="translate-page" class="primary">翻译当前页</button>
+        <button id="toggle-visible">隐藏译文</button>
+        <button id="clear-page">清除译文</button>
+      </section>
+      <p id="status" role="status">准备就绪</p>
+    </main>
+    <script type="module" src="/src/popup/main.ts"></script>
+  </body>
+</html>
