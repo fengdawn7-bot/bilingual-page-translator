@@ -78,8 +78,27 @@ async function sendToActiveTab<T = unknown>(message: TabRequest): Promise<T> {
     files: ["content.js"]
   });
 
+  await waitForContentScript(tab.id);
+
+  return sendTabMessage(tab.id, message);
+}
+
+async function waitForContentScript(tabId: number): Promise<void> {
+  const maxAttempts = 10;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      await sendTabMessage(tabId, { type: "BPT_PING" });
+      return;
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 60));
+    }
+  }
+  throw new Error("页面脚本未就绪，请刷新页面后重试");
+}
+
+function sendTabMessage<T>(tabId: number, message: TabRequest): Promise<T> {
   return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tab.id!, message, (response?: { ok: boolean; data?: T; error?: string }) => {
+    chrome.tabs.sendMessage(tabId, message, (response?: { ok: boolean; data?: T; error?: string }) => {
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
         return;

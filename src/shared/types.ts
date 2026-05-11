@@ -30,6 +30,7 @@ export type RuntimeRequest =
     };
 
 export type TabRequest =
+  | { type: "BPT_PING" }
   | { type: "BPT_TRANSLATE_PAGE" }
   | { type: "BPT_CLEAR_TRANSLATIONS" }
   | { type: "BPT_SET_TRANSLATIONS_VISIBLE"; visible: boolean };

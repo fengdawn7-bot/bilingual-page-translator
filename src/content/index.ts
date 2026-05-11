@@ -1,9 +1,15 @@
 import { collectTranslatableBlocks, findBlockElement } from "./pageScanner";
 import { clearTranslations, insertTranslation, setTranslationsVisible } from "./translationDom";
-import { getConfig } from "../shared/storage";
 import type { RuntimeRequest, TabRequest, TranslationItem, TranslationProgress } from "../shared/types";
 
 const MARKER = "__BPT_CONTENT_SCRIPT_READY__";
+const CONFIG_STORAGE_KEY = "bpt-translator-config";
+const DEFAULT_CONTENT_CONFIG = {
+  batchSize: 32,
+  concurrency: 3,
+  maxBlocks: 300,
+  translateUIText: true
+};
 
 declare global {
   interface Window {
@@ -27,6 +33,10 @@ if (!window[MARKER]) {
 }
 
 async function handleTabMessage(message: TabRequest): Promise<unknown> {
+  if (message.type === "BPT_PING") {
+    return { ready: true };
+  }
+
   if (message.type === "BPT_CLEAR_TRANSLATIONS") {
     clearTranslations(document);
     return { cleared: true };
@@ -38,7 +48,7 @@ async function handleTabMessage(message: TabRequest): Promise<unknown> {
   }
 
   if (message.type === "BPT_TRANSLATE_PAGE") {
-    const config = await getConfig();
+    const config = await getContentConfig();
     const blocks = collectTranslatableBlocks(document, {
       maxBlocks: config.maxBlocks,
       translateUIText: config.translateUIText
@@ -96,6 +106,14 @@ async function handleTabMessage(message: TabRequest): Promise<unknown> {
   }
 
   throw new Error("Unsupported tab message");
+}
+
+async function getContentConfig() {
+  const stored = await chrome.storage.local.get(CONFIG_STORAGE_KEY);
+  return {
+    ...DEFAULT_CONTENT_CONFIG,
+    ...(stored[CONFIG_STORAGE_KEY] ?? {})
+  };
 }
 
 function sendProgress(progress: TranslationProgress): void {
