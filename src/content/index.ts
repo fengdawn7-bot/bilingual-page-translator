@@ -8,7 +8,7 @@ const DEFAULT_CONTENT_CONFIG = {
   batchSize: 32,
   concurrency: 3,
   maxBlocks: 300,
-  translateUIText: true
+  translateUIText: false
 };
 
 declare global {

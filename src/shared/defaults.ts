@@ -8,7 +8,7 @@ export const DEFAULT_CONFIG: TranslatorConfig = {
   batchSize: 32,
   concurrency: 3,
   maxBlocks: 300,
-  translateUIText: true
+  translateUIText: false
 };
 
 export const CONFIG_STORAGE_KEY = "bpt-translator-config";

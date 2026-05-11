@@ -10,7 +10,7 @@ const config: TranslatorConfig = {
   batchSize: 32,
   concurrency: 3,
   maxBlocks: 300,
-  translateUIText: true
+  translateUIText: false
 };
 
 describe("translateItems", () => {

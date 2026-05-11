@@ -92,4 +92,21 @@ describe("collectTranslatableBlocks", () => {
       "Second visible sentence for translation."
     ]);
   });
+
+  test("skips inline app data, script-like text, and tracking payloads rendered in the DOM", () => {
+    document.body.innerHTML = `
+      <main>
+        <div>SMLoad(["B5ta63uCal","DRsNWZxIzQ","CGTMIGYAP9","i81bOnAaMEy"], "en-US", "auto");</div>
+        <div>function recordImagePerformanceMark() { performance.mark("first-post-meaningful-paint"); }</div>
+        <div>{"experiment":"BRONCPLUS","payload":["WmcQ0Nz9r8","B5V6bGIPNs","X5I52d_nIL"]}</div>
+        <p>Not sure why, try both Google and personal email failed</p>
+      </main>
+    `;
+
+    const blocks = collectTranslatableBlocks(document);
+
+    expect(blocks.map((block) => block.text)).toEqual([
+      "Not sure why, try both Google and personal email failed"
+    ]);
+  });
 });

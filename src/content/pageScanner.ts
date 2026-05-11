@@ -106,6 +106,7 @@ function isTranslatableElement(element: HTMLElement, text: string, translateUITe
   if (text.length < MIN_TEXT_LENGTH) return false;
   if (text.length > MAX_TEXT_LENGTH) return false;
   if (!hasMeaningfulLetters(text)) return false;
+  if (looksLikeCodeOrData(text)) return false;
   if (!isVisible(element)) return false;
   return true;
 }
@@ -124,6 +125,18 @@ function isVisible(element: HTMLElement): boolean {
 
 function hasMeaningfulLetters(text: string): boolean {
   return /[A-Za-z\u00C0-\u024F\u0400-\u04FF]/.test(text);
+}
+
+function looksLikeCodeOrData(text: string): boolean {
+  if (/^(function|const|let|var|import|export|window\.|document\.|SMLoad\s*\()/i.test(text)) return true;
+  if (/^\s*[\[{].*[\]}]\s*;?$/.test(text)) return true;
+  if (/[{}[\]]/.test(text) && /["']?[A-Za-z0-9_-]{8,}["']?\s*[,:\]]/.test(text)) return true;
+  if (/[A-Za-z_$][\w$]*\s*\([^)]*\)\s*;?$/.test(text) && /[{}()[\];]/.test(text)) return true;
+
+  const symbolCount = (text.match(/[{}[\]();,:|"=]/g) ?? []).length;
+  const symbolRatio = symbolCount / text.length;
+  const longTokenCount = (text.match(/[A-Za-z0-9_-]{16,}/g) ?? []).length;
+  return symbolRatio > 0.18 && longTokenCount >= 2;
 }
 
 function normalizeText(text: string): string {

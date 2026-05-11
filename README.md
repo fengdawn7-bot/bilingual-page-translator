@@ -40,7 +40,7 @@ Open the extension options page and set:
 - `Batch size`: default is `32`.
 - `Concurrency`: default is `3`.
 - `Max blocks per page`: default is `300`.
-- `Translate UI text`: enabled by default for app-like pages.
+- `Translate UI text`: disabled by default to avoid translating navigation chrome and app data; enable it for app-like pages if needed.
 
 The API key is stored locally in Chrome storage. This project does not include a backend proxy.
 
