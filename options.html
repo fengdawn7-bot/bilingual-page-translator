@@ -10,8 +10,15 @@
       <h1>翻译 API 设置</h1>
       <form id="settings-form">
         <label>
+          翻译引擎
+          <select id="provider" name="provider">
+            <option value="deepl">DeepL（更快，推荐）</option>
+            <option value="openai-compatible">OpenAI 兼容（复杂内容）</option>
+          </select>
+        </label>
+        <label>
           API Key
-          <input id="api-key" name="apiKey" type="password" autocomplete="off" placeholder="sk-..." />
+          <input id="api-key" name="apiKey" type="password" autocomplete="off" placeholder="DeepL Auth Key 或 sk-..." />
         </label>
         <label>
           Base URL
@@ -28,7 +35,7 @@
         <div class="settings-grid">
           <label>
             每批数量
-            <input id="batch-size" name="batchSize" type="number" min="4" max="80" step="1" />
+            <input id="batch-size" name="batchSize" type="number" min="4" max="50" step="1" />
           </label>
           <label>
             并发数

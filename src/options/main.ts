@@ -1,9 +1,10 @@
 import "../styles/app.css";
 import { DEFAULT_CONFIG } from "../shared/defaults";
 import { getConfig, saveConfig } from "../shared/storage";
-import type { RuntimeRequest, TranslatorConfig } from "../shared/types";
+import type { RuntimeRequest, TranslationProvider, TranslatorConfig } from "../shared/types";
 
 const form = document.querySelector<HTMLFormElement>("#settings-form");
+const providerInput = document.querySelector<HTMLSelectElement>("#provider");
 const apiKeyInput = document.querySelector<HTMLInputElement>("#api-key");
 const baseURLInput = document.querySelector<HTMLInputElement>("#base-url");
 const modelInput = document.querySelector<HTMLInputElement>("#model");
@@ -16,6 +17,10 @@ const testButton = document.querySelector<HTMLButtonElement>("#test-connection")
 const statusElement = document.querySelector<HTMLElement>("#status");
 
 void load();
+
+providerInput?.addEventListener("change", () => {
+  applyProviderDefaults(providerInput.value as TranslationProvider, false);
+});
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -36,6 +41,7 @@ testButton?.addEventListener("click", async () => {
 
 async function load(): Promise<void> {
   const config = await getConfig();
+  if (providerInput) providerInput.value = config.provider;
   if (apiKeyInput) apiKeyInput.value = config.apiKey;
   if (baseURLInput) baseURLInput.value = config.baseURL;
   if (modelInput) modelInput.value = config.model;
@@ -44,10 +50,13 @@ async function load(): Promise<void> {
   if (concurrencyInput) concurrencyInput.value = String(config.concurrency);
   if (maxBlocksInput) maxBlocksInput.value = String(config.maxBlocks);
   if (translateUITextInput) translateUITextInput.checked = config.translateUIText;
+  applyProviderDefaults(config.provider, true);
 }
 
 function readForm(): TranslatorConfig {
+  const provider = (providerInput?.value as TranslationProvider | undefined) ?? DEFAULT_CONFIG.provider;
   return {
+    provider,
     apiKey: apiKeyInput?.value.trim() ?? "",
     baseURL: baseURLInput?.value.trim() || DEFAULT_CONFIG.baseURL,
     model: modelInput?.value.trim() || DEFAULT_CONFIG.model,
@@ -57,6 +66,35 @@ function readForm(): TranslatorConfig {
     maxBlocks: readNumber(maxBlocksInput, DEFAULT_CONFIG.maxBlocks),
     translateUIText: translateUITextInput?.checked ?? DEFAULT_CONFIG.translateUIText
   };
+}
+
+function applyProviderDefaults(provider: TranslationProvider, keepExistingValues: boolean): void {
+  if (provider === "deepl") {
+    if (baseURLInput && (!keepExistingValues || !baseURLInput.value)) {
+      baseURLInput.value = "https://api-free.deepl.com";
+    }
+    if (targetLanguageInput && (!keepExistingValues || !targetLanguageInput.value)) {
+      targetLanguageInput.value = "ZH-HANS";
+    }
+    if (modelInput) {
+      modelInput.disabled = true;
+      if (!keepExistingValues) modelInput.value = "latency_optimized";
+      modelInput.placeholder = "DeepL 自动选择低延迟模型";
+    }
+    return;
+  }
+
+  if (baseURLInput && (!keepExistingValues || !baseURLInput.value)) {
+    baseURLInput.value = "https://api.openai.com/v1";
+  }
+  if (targetLanguageInput && (!keepExistingValues || !targetLanguageInput.value)) {
+    targetLanguageInput.value = "Simplified Chinese";
+  }
+  if (modelInput) {
+    modelInput.disabled = false;
+    if (!keepExistingValues || !modelInput.value) modelInput.value = "gpt-4o-mini";
+    modelInput.placeholder = "gpt-4o-mini";
+  }
 }
 
 function readNumber(input: HTMLInputElement | null, fallback: number): number {

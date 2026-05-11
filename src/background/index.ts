@@ -1,4 +1,4 @@
-import { testConnection } from "./openaiClient";
+import { testProviderConnection } from "./provider";
 import { ChromeStorageTranslationCache } from "./translationCache";
 import { translateItems } from "./translationService";
 import { getConfig } from "../shared/storage";
@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((message: RuntimeRequest, _sender, sendResp
 
 async function handleMessage(message: RuntimeRequest): Promise<unknown> {
   if (message.type === "BPT_TEST_CONNECTION") {
-    await testConnection(message.config);
+    await testProviderConnection(message.config);
     return undefined;
   }
 

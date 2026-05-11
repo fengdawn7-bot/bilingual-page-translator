@@ -1,4 +1,7 @@
+export type TranslationProvider = "deepl" | "openai-compatible";
+
 export interface TranslatorConfig {
+  provider: TranslationProvider;
   apiKey: string;
   baseURL: string;
   model: string;

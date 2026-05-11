@@ -3,6 +3,7 @@ import { translateBatch, testConnection } from "../src/background/openaiClient";
 import type { TranslatorConfig } from "../src/shared/types";
 
 const config: TranslatorConfig = {
+  provider: "openai-compatible",
   apiKey: "test-key",
   baseURL: "https://api.example.com/v1",
   model: "test-model",

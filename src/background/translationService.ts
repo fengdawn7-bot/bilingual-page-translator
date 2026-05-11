@@ -1,5 +1,5 @@
 import { createCacheKey, type TranslationCache } from "./translationCache";
-import { translateBatch, type TranslateBatchOptions } from "./openaiClient";
+import { translateWithProvider, type ProviderTranslateOptions } from "./provider";
 import type { TextBlock, TranslationItem, TranslatorConfig } from "../shared/types";
 
 interface PendingItem extends TextBlock {
@@ -12,7 +12,7 @@ export interface TranslateItemsOptions {
   pageUrl: string;
   items: TextBlock[];
   cache: TranslationCache;
-  translateBatch?: (options: TranslateBatchOptions) => Promise<string[]>;
+  translateBatch?: (options: ProviderTranslateOptions) => Promise<string[]>;
   batchSize?: number;
   concurrency?: number;
 }
@@ -22,7 +22,7 @@ export async function translateItems({
   pageUrl,
   items,
   cache,
-  translateBatch: translate = translateBatch,
+  translateBatch: translate = translateWithProvider,
   batchSize = 32,
   concurrency = 3
 }: TranslateItemsOptions): Promise<TranslationItem[]> {
@@ -35,7 +35,7 @@ export async function translateItems({
         pageUrl,
         text: item.text,
         targetLanguage: config.targetLanguage,
-        model: config.model
+        model: `${config.provider}:${config.model}`
       });
       const cached = await cache.get(key);
       if (cached) {

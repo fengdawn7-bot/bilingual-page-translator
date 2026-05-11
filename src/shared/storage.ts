@@ -12,11 +12,12 @@ export async function getConfig(): Promise<TranslatorConfig> {
 export async function saveConfig(config: TranslatorConfig): Promise<void> {
   await chrome.storage.local.set({
     [CONFIG_STORAGE_KEY]: {
+      provider: config.provider,
       apiKey: config.apiKey.trim(),
       baseURL: config.baseURL.trim().replace(/\/+$/, ""),
       model: config.model.trim(),
       targetLanguage: config.targetLanguage.trim() || DEFAULT_CONFIG.targetLanguage,
-      batchSize: clampInteger(config.batchSize, 4, 80, DEFAULT_CONFIG.batchSize),
+      batchSize: clampInteger(config.batchSize, 4, 50, DEFAULT_CONFIG.batchSize),
       concurrency: clampInteger(config.concurrency, 1, 6, DEFAULT_CONFIG.concurrency),
       maxBlocks: clampInteger(config.maxBlocks, 20, 1000, DEFAULT_CONFIG.maxBlocks),
       translateUIText: Boolean(config.translateUIText)

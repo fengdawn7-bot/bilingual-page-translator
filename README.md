@@ -1,12 +1,13 @@
 # Bilingual Page Translator
 
-A self-hosted Chrome Manifest V3 extension for bilingual webpage translation with an OpenAI-compatible API.
+A self-hosted Chrome Manifest V3 extension for bilingual webpage translation with DeepL or an OpenAI-compatible API.
 
 ## Features
 
 - Manual translation for the current tab.
 - Bilingual display by inserting translations below source text.
-- Local settings for API key, base URL, model, and target language.
+- Local settings for provider, API key, base URL, model, and target language.
+- DeepL provider for faster normal webpage translation.
 - OpenAI-compatible Chat Completions API support, including DeepSeek-style endpoints.
 - Local translation cache keyed by page URL, source text, target language, and model.
 - Broader visible text scanning for article pages and app-like pages such as GitHub.
@@ -33,10 +34,11 @@ Load the generated `dist` directory in Chrome:
 
 Open the extension options page and set:
 
+- `Provider`: `DeepL` for speed, or `OpenAI Compatible` for complex content.
 - `API Key`: your provider key.
-- `Base URL`: for DeepSeek, use `https://api.deepseek.com`.
-- `Model`: for DeepSeek, `deepseek-v4-flash` is a current option.
-- `Target language`: default is `Simplified Chinese`.
+- `Base URL`: for DeepL Free, use `https://api-free.deepl.com`; for DeepL Pro, use `https://api.deepl.com`; for DeepSeek, use `https://api.deepseek.com`.
+- `Model`: disabled for DeepL; for DeepSeek, `deepseek-v4-flash` is a current OpenAI-compatible option.
+- `Target language`: default is `ZH-HANS` for DeepL and `Simplified Chinese` for OpenAI-compatible providers.
 - `Batch size`: default is `32`.
 - `Concurrency`: default is `3`.
 - `Max blocks per page`: default is `300`.

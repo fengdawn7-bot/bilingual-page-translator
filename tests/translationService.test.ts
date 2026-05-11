@@ -3,6 +3,7 @@ import { translateItems } from "../src/background/translationService";
 import type { TranslatorConfig } from "../src/shared/types";
 
 const config: TranslatorConfig = {
+  provider: "deepl",
   apiKey: "test-key",
   baseURL: "https://api.example.com/v1",
   model: "test-model",
