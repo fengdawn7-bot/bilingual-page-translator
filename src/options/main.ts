@@ -8,6 +8,10 @@ const apiKeyInput = document.querySelector<HTMLInputElement>("#api-key");
 const baseURLInput = document.querySelector<HTMLInputElement>("#base-url");
 const modelInput = document.querySelector<HTMLInputElement>("#model");
 const targetLanguageInput = document.querySelector<HTMLInputElement>("#target-language");
+const batchSizeInput = document.querySelector<HTMLInputElement>("#batch-size");
+const concurrencyInput = document.querySelector<HTMLInputElement>("#concurrency");
+const maxBlocksInput = document.querySelector<HTMLInputElement>("#max-blocks");
+const translateUITextInput = document.querySelector<HTMLInputElement>("#translate-ui-text");
 const testButton = document.querySelector<HTMLButtonElement>("#test-connection");
 const statusElement = document.querySelector<HTMLElement>("#status");
 
@@ -36,6 +40,10 @@ async function load(): Promise<void> {
   if (baseURLInput) baseURLInput.value = config.baseURL;
   if (modelInput) modelInput.value = config.model;
   if (targetLanguageInput) targetLanguageInput.value = config.targetLanguage;
+  if (batchSizeInput) batchSizeInput.value = String(config.batchSize);
+  if (concurrencyInput) concurrencyInput.value = String(config.concurrency);
+  if (maxBlocksInput) maxBlocksInput.value = String(config.maxBlocks);
+  if (translateUITextInput) translateUITextInput.checked = config.translateUIText;
 }
 
 function readForm(): TranslatorConfig {
@@ -43,8 +51,18 @@ function readForm(): TranslatorConfig {
     apiKey: apiKeyInput?.value.trim() ?? "",
     baseURL: baseURLInput?.value.trim() || DEFAULT_CONFIG.baseURL,
     model: modelInput?.value.trim() || DEFAULT_CONFIG.model,
-    targetLanguage: targetLanguageInput?.value.trim() || DEFAULT_CONFIG.targetLanguage
+    targetLanguage: targetLanguageInput?.value.trim() || DEFAULT_CONFIG.targetLanguage,
+    batchSize: readNumber(batchSizeInput, DEFAULT_CONFIG.batchSize),
+    concurrency: readNumber(concurrencyInput, DEFAULT_CONFIG.concurrency),
+    maxBlocks: readNumber(maxBlocksInput, DEFAULT_CONFIG.maxBlocks),
+    translateUIText: translateUITextInput?.checked ?? DEFAULT_CONFIG.translateUIText
   };
+}
+
+function readNumber(input: HTMLInputElement | null, fallback: number): number {
+  if (!input) return fallback;
+  const value = Number(input.value);
+  return Number.isFinite(value) ? value : fallback;
 }
 
 async function runWithStatus(message: string, action: () => Promise<void>): Promise<void> {

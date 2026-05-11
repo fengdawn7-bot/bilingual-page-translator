@@ -36,20 +36,41 @@ const TRANSLATION_TARGET_SELECTOR = [
   "span",
   "div"
 ].join(",");
+const UI_TEXT_SELECTOR = [
+  "nav",
+  "header",
+  "footer",
+  "aside",
+  "button",
+  "a",
+  "label",
+  "[role='button']",
+  "[role='link']"
+].join(",");
 const MIN_TEXT_LENGTH = 2;
 const MAX_TEXT_LENGTH = 900;
 const MAX_BLOCKS = 220;
 
-export function collectTranslatableBlocks(root: Document = document): TextBlock[] {
+export interface CollectBlocksOptions {
+  maxBlocks?: number;
+  translateUIText?: boolean;
+}
+
+export function collectTranslatableBlocks(
+  root: Document = document,
+  options: CollectBlocksOptions = {}
+): TextBlock[] {
   if (!root.body) return [];
 
+  const maxBlocks = options.maxBlocks ?? MAX_BLOCKS;
+  const translateUIText = options.translateUIText ?? true;
   const seen = new Set<string>();
   const seenElements = new Set<HTMLElement>();
   const blocks: TextBlock[] = [];
   const walker = root.createTreeWalker(root.body, NodeFilter.SHOW_TEXT);
 
   let node = walker.nextNode();
-  while (node && blocks.length < MAX_BLOCKS) {
+  while (node && blocks.length < maxBlocks) {
     const textNode = node;
     node = walker.nextNode();
 
@@ -60,7 +81,7 @@ export function collectTranslatableBlocks(root: Document = document): TextBlock[
     if (!element || seenElements.has(element)) continue;
 
     const text = normalizeText(textNode.textContent ?? "");
-    if (!isTranslatableElement(element, text)) continue;
+    if (!isTranslatableElement(element, text, translateUIText)) continue;
     if (seen.has(text)) continue;
 
     seen.add(text);
@@ -78,9 +99,10 @@ export function findBlockElement(id: string, root: Document = document): HTMLEle
   return root.querySelector<HTMLElement>(`[data-bpt-id="${CSS.escape(id)}"]`);
 }
 
-function isTranslatableElement(element: HTMLElement, text: string): boolean {
+function isTranslatableElement(element: HTMLElement, text: string, translateUIText: boolean): boolean {
   if (element.closest("[data-bpt-status='done']")) return false;
   if (element.closest(SKIP_ANCESTOR_SELECTOR)) return false;
+  if (!translateUIText && element.closest(UI_TEXT_SELECTOR)) return false;
   if (text.length < MIN_TEXT_LENGTH) return false;
   if (text.length > MAX_TEXT_LENGTH) return false;
   if (!hasMeaningfulLetters(text)) return false;

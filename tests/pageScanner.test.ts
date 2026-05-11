@@ -60,4 +60,36 @@ describe("collectTranslatableBlocks", () => {
       "This new paragraph should be collected because it has not been processed yet."
     ]);
   });
+
+  test("can skip UI chrome text when configured", () => {
+    document.body.innerHTML = `
+      <nav><a>Repositories</a><button>Save</button></nav>
+      <main>
+        <p>Chrome extensions can improve reading workflows when they keep the original paragraph visible.</p>
+      </main>
+    `;
+
+    const blocks = collectTranslatableBlocks(document, { translateUIText: false });
+
+    expect(blocks.map((block) => block.text)).toEqual([
+      "Chrome extensions can improve reading workflows when they keep the original paragraph visible."
+    ]);
+  });
+
+  test("honors the configured maximum number of collected blocks", () => {
+    document.body.innerHTML = `
+      <main>
+        <p>First visible sentence for translation.</p>
+        <p>Second visible sentence for translation.</p>
+        <p>Third visible sentence for translation.</p>
+      </main>
+    `;
+
+    const blocks = collectTranslatableBlocks(document, { maxBlocks: 2 });
+
+    expect(blocks.map((block) => block.text)).toEqual([
+      "First visible sentence for translation.",
+      "Second visible sentence for translation."
+    ]);
+  });
 });

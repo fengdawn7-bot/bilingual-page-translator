@@ -3,6 +3,10 @@ export interface TranslatorConfig {
   baseURL: string;
   model: string;
   targetLanguage: string;
+  batchSize: number;
+  concurrency: number;
+  maxBlocks: number;
+  translateUIText: boolean;
 }
 
 export interface TextBlock {
@@ -29,3 +33,14 @@ export type TabRequest =
   | { type: "BPT_TRANSLATE_PAGE" }
   | { type: "BPT_CLEAR_TRANSLATIONS" }
   | { type: "BPT_SET_TRANSLATIONS_VISIBLE"; visible: boolean };
+
+export type ProgressPhase = "scanned" | "batch-complete" | "complete" | "error";
+
+export interface TranslationProgress {
+  type: "BPT_TRANSLATION_PROGRESS";
+  phase: ProgressPhase;
+  total: number;
+  translated: number;
+  failed: number;
+  message?: string;
+}

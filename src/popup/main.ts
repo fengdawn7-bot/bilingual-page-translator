@@ -1,5 +1,5 @@
 import "../styles/app.css";
-import type { TabRequest } from "../shared/types";
+import type { TabRequest, TranslationProgress } from "../shared/types";
 
 let translationsVisible = true;
 
@@ -11,8 +11,10 @@ const statusElement = document.querySelector<HTMLElement>("#status");
 
 translateButton?.addEventListener("click", async () => {
   await runWithStatus("正在翻译当前页...", async () => {
-    const result = await sendToActiveTab<{ translatedCount: number }>({ type: "BPT_TRANSLATE_PAGE" });
-    setStatus(`已插入 ${result.translatedCount} 条译文`);
+    const result = await sendToActiveTab<{ translatedCount: number; failedCount: number; total: number }>({
+      type: "BPT_TRANSLATE_PAGE"
+    });
+    setStatus(`完成：${result.translatedCount}/${result.total}，失败 ${result.failedCount}`);
   });
 });
 
@@ -34,6 +36,25 @@ toggleButton?.addEventListener("click", async () => {
 
 optionsButton?.addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
+});
+
+chrome.runtime.onMessage.addListener((message: TranslationProgress) => {
+  if (message.type !== "BPT_TRANSLATION_PROGRESS") return;
+  if (message.phase === "scanned") {
+    setStatus(`扫描到 ${message.total} 条，准备翻译...`);
+    return;
+  }
+  if (message.phase === "batch-complete") {
+    setStatus(`已翻译 ${message.translated}/${message.total}，失败 ${message.failed}`);
+    return;
+  }
+  if (message.phase === "complete") {
+    setStatus(`完成：${message.translated}/${message.total}，失败 ${message.failed}`);
+    return;
+  }
+  if (message.phase === "error") {
+    setStatus(message.message ?? "翻译失败");
+  }
 });
 
 async function runWithStatus(message: string, action: () => Promise<void>): Promise<void> {

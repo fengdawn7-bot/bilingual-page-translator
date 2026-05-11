@@ -25,6 +25,24 @@
           目标语言
           <input id="target-language" name="targetLanguage" type="text" placeholder="Simplified Chinese" />
         </label>
+        <div class="settings-grid">
+          <label>
+            每批数量
+            <input id="batch-size" name="batchSize" type="number" min="4" max="80" step="1" />
+          </label>
+          <label>
+            并发数
+            <input id="concurrency" name="concurrency" type="number" min="1" max="6" step="1" />
+          </label>
+          <label>
+            单页最多条数
+            <input id="max-blocks" name="maxBlocks" type="number" min="20" max="1000" step="10" />
+          </label>
+        </div>
+        <label class="checkbox-row">
+          <input id="translate-ui-text" name="translateUIText" type="checkbox" />
+          翻译按钮、链接和导航等界面文本
+        </label>
         <div class="form-actions">
           <button type="submit" class="primary">保存</button>
           <button id="test-connection" type="button">测试连接</button>

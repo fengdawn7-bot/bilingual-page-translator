@@ -30,7 +30,9 @@ async function handleMessage(message: RuntimeRequest): Promise<unknown> {
       config,
       pageUrl: message.pageUrl,
       items: message.items,
-      cache
+      cache,
+      batchSize: config.batchSize,
+      concurrency: config.concurrency
     });
   }
 

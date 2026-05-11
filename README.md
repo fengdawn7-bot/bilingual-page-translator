@@ -11,6 +11,8 @@ A self-hosted Chrome Manifest V3 extension for bilingual webpage translation wit
 - Local translation cache keyed by page URL, source text, target language, and model.
 - Broader visible text scanning for article pages and app-like pages such as GitHub.
 - Larger concurrent translation batches for faster page translation.
+- Progressive insertion with popup progress while the page is still translating.
+- Configurable batch size, concurrency, per-page limit, and UI text translation.
 
 ## Development
 
@@ -35,6 +37,10 @@ Open the extension options page and set:
 - `Base URL`: for DeepSeek, use `https://api.deepseek.com`.
 - `Model`: for DeepSeek, `deepseek-v4-flash` is a current option.
 - `Target language`: default is `Simplified Chinese`.
+- `Batch size`: default is `32`.
+- `Concurrency`: default is `3`.
+- `Max blocks per page`: default is `300`.
+- `Translate UI text`: enabled by default for app-like pages.
 
 The API key is stored locally in Chrome storage. This project does not include a backend proxy.
 

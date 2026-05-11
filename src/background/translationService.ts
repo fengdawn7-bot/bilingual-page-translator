@@ -48,18 +48,22 @@ export async function translateItems({
 
   const batches = chunk(pending.sort((a, b) => a.order - b.order), batchSize);
   await runWithConcurrency(batches, concurrency, async (batch) => {
-    const translations = await translate({
-      config,
-      texts: batch.map((item) => item.text)
-    });
+    try {
+      const translations = await translate({
+        config,
+        texts: batch.map((item) => item.text)
+      });
 
-    await Promise.all(
-      batch.map(async (item, translationIndex) => {
-        const translation = translations[translationIndex] ?? "";
-        await cache.set(item.key, translation);
-        results[item.order] = { id: item.id, text: item.text, translation };
-      })
-    );
+      await Promise.all(
+        batch.map(async (item, translationIndex) => {
+          const translation = translations[translationIndex] ?? "";
+          await cache.set(item.key, translation);
+          results[item.order] = { id: item.id, text: item.text, translation };
+        })
+      );
+    } catch {
+      // Keep successful batches visible. The content script reports failed counts.
+    }
   });
 
   return results.filter((item): item is TranslationItem => Boolean(item));

@@ -1,6 +1,7 @@
 import { collectTranslatableBlocks, findBlockElement } from "./pageScanner";
 import { clearTranslations, insertTranslation, setTranslationsVisible } from "./translationDom";
-import type { RuntimeRequest, TabRequest, TranslationItem } from "../shared/types";
+import { getConfig } from "../shared/storage";
+import type { RuntimeRequest, TabRequest, TranslationItem, TranslationProgress } from "../shared/types";
 
 const MARKER = "__BPT_CONTENT_SCRIPT_READY__";
 
@@ -37,29 +38,70 @@ async function handleTabMessage(message: TabRequest): Promise<unknown> {
   }
 
   if (message.type === "BPT_TRANSLATE_PAGE") {
-    const blocks = collectTranslatableBlocks(document);
+    const config = await getConfig();
+    const blocks = collectTranslatableBlocks(document, {
+      maxBlocks: config.maxBlocks,
+      translateUIText: config.translateUIText
+    });
     let translatedCount = 0;
+    let failedCount = 0;
+
+    sendProgress({
+      type: "BPT_TRANSLATION_PROGRESS",
+      phase: "scanned",
+      total: blocks.length,
+      translated: 0,
+      failed: 0
+    });
 
     if (blocks.length > 0) {
-      const response = await sendRuntimeMessage<TranslationItem[]>({
-        type: "BPT_TRANSLATE_BATCH",
-        pageUrl: location.href,
-        items: blocks
-      });
+      const requestWindowSize = config.batchSize * config.concurrency;
+      for (let index = 0; index < blocks.length; index += requestWindowSize) {
+        const batch = blocks.slice(index, index + requestWindowSize);
+        const response = await sendRuntimeMessage<TranslationItem[]>({
+          type: "BPT_TRANSLATE_BATCH",
+          pageUrl: location.href,
+          items: batch
+        });
 
-      for (const item of response) {
-        const element = findBlockElement(item.id, document);
-        if (element) {
-          insertTranslation(element, item.translation);
-          translatedCount += 1;
+        failedCount += batch.length - response.length;
+
+        for (const item of response) {
+          const element = findBlockElement(item.id, document);
+          if (element) {
+            insertTranslation(element, item.translation);
+            translatedCount += 1;
+          }
         }
+
+        sendProgress({
+          type: "BPT_TRANSLATION_PROGRESS",
+          phase: "batch-complete",
+          total: blocks.length,
+          translated: translatedCount,
+          failed: failedCount
+        });
       }
     }
 
-    return { translatedCount };
+    sendProgress({
+      type: "BPT_TRANSLATION_PROGRESS",
+      phase: "complete",
+      total: blocks.length,
+      translated: translatedCount,
+      failed: failedCount
+    });
+
+    return { translatedCount, failedCount, total: blocks.length };
   }
 
   throw new Error("Unsupported tab message");
+}
+
+function sendProgress(progress: TranslationProgress): void {
+  chrome.runtime.sendMessage(progress).catch(() => {
+    // The popup may have closed; translation should continue on the page.
+  });
 }
 
 function sendRuntimeMessage<T>(message: RuntimeRequest): Promise<T> {

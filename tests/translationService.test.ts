@@ -6,7 +6,11 @@ const config: TranslatorConfig = {
   apiKey: "test-key",
   baseURL: "https://api.example.com/v1",
   model: "test-model",
-  targetLanguage: "Simplified Chinese"
+  targetLanguage: "Simplified Chinese",
+  batchSize: 32,
+  concurrency: 3,
+  maxBlocks: 300,
+  translateUIText: true
 };
 
 describe("translateItems", () => {
@@ -38,5 +42,34 @@ describe("translateItems", () => {
     expect(result).toHaveLength(65);
     expect(translateBatch).toHaveBeenCalledTimes(3);
     expect(translateBatch.mock.calls.map(([call]) => call.texts.length)).toEqual([32, 32, 1]);
+  });
+
+  test("keeps successful batches when one API batch fails", async () => {
+    const translateBatch = vi
+      .fn()
+      .mockResolvedValueOnce(["译文:Visible text 0", "译文:Visible text 1"])
+      .mockRejectedValueOnce(new Error("rate limited"));
+    const items = Array.from({ length: 4 }, (_, index) => ({
+      id: `id-${index}`,
+      text: `Visible text ${index}`
+    }));
+
+    const result = await translateItems({
+      config,
+      pageUrl: "https://github.com/search?q=Google+email",
+      items,
+      cache: {
+        get: async () => undefined,
+        set: async () => undefined
+      },
+      translateBatch,
+      batchSize: 2,
+      concurrency: 1
+    });
+
+    expect(result).toEqual([
+      { id: "id-0", text: "Visible text 0", translation: "译文:Visible text 0" },
+      { id: "id-1", text: "Visible text 1", translation: "译文:Visible text 1" }
+    ]);
   });
 });

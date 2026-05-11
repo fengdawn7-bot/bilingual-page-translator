@@ -6,7 +6,11 @@ const config: TranslatorConfig = {
   apiKey: "test-key",
   baseURL: "https://api.example.com/v1",
   model: "test-model",
-  targetLanguage: "Simplified Chinese"
+  targetLanguage: "Simplified Chinese",
+  batchSize: 32,
+  concurrency: 3,
+  maxBlocks: 300,
+  translateUIText: true
 };
 
 describe("openaiClient", () => {
